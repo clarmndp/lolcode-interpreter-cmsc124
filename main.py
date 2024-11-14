@@ -12,7 +12,7 @@
 """
 
 import sys
-from lexer import Token, Lexer, TOKEN_TYPES
+from lexer import Lexer
 
 def interpreter(filename):
     # We first check if the file extension is .lol
@@ -47,7 +47,7 @@ def analyzeTokens(tokens):
 # Start
 def main():
     if len(sys.argv) != 2:
-        print("Error: Must be of format > python main.py <filename>")
+        print("Error: Must be of format > python main.py <filename.lol>")
         exit()
     
     program_file = sys.argv[1]
