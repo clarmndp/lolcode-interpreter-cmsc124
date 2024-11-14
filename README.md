@@ -2,7 +2,8 @@
 An interpreter for LOLCODE language syntax written in Python.
 
 ## Running the application locally
-...
+    python main.py file.lol
+    python3 main.py file.lol
 
 ## Developer guidelines
 Always take note of the following notes.

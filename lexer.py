@@ -122,14 +122,21 @@ class Lexer:
             print(i)
             # Handle boolean 
             found_bool = False
+<<<<<<< HEAD
             for found_bool, token in BOOLEAN_VALUES.items():
                 if line[i].upper().startswith(found_bool):
                     print(token)
                     tokens.append(token)
                     i += len(found_bool)
+=======
+            for bool_value in BOOLEAN_VALUES:
+                if line[i:].upper().startswith(bool_value):
+                    tokens.append(BOOLEAN_VALUES[bool_value])
+                    i += len(bool_value)
+>>>>>>> 8ae237190c6e5bf5a59c1644575e016517dbc635
                     found_bool = True
                     break
-            
+
             if found_bool:
                 continue
         
