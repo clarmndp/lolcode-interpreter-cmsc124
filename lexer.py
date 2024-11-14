@@ -153,8 +153,19 @@ class Lexer:
                 i += 1
                 continue
             
-            # developer notes:
-                # need handle cases for operators, delimiters, condition statements, etc.
+            # Handle comments
+            if char == '#':
+                comment = ""
+                i += 1
+                while i < len(line):
+                    comment += line[i]
+                    i += 1
+                tokens.append(Token(TOKEN_TYPES["COMMENT"], comment))
+                continue
             
             i += 1
+
+            """ developer notes:
+                need to add handle cases for delimiters, bools, cond statements, etc.
+            """
         return tokens
