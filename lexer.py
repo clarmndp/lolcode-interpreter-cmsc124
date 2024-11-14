@@ -108,7 +108,7 @@ class Token:
 
 class Lexer:  
     # We convert source code by line into tokens
-    def tokenizer(line):
+    def definer(line):
         tokens = []
         i = 0
         
@@ -118,16 +118,17 @@ class Lexer:
             "FAIL": Token(TOKEN_TYPES["TROOF"], False),
             "NOOB": Token(TOKEN_TYPES["LITERAL"], None),
         }
-        
         while i < len(line):
             char = line[i]
-            
+            print(i)
             # Handle boolean 
             found_bool = False
+
             for bool_value in BOOLEAN_VALUES:
                 if line[i:].upper().startswith(bool_value):
                     tokens.append(BOOLEAN_VALUES[bool_value])
                     i += len(bool_value)
+                    
                     found_bool = True
                     break
 
@@ -144,6 +145,7 @@ class Lexer:
                 string_value = ""
                 i += 1  # Skip opening quote
                 while i < len(line) and line[i] != '"':
+                    
                     string_value += line[i]
                     i += 1
                 i += 1  # Skip closing quote
@@ -153,6 +155,7 @@ class Lexer:
             # Handle numbers
             if char.isdigit() or (char == '-' and i + 1 < len(line) and line[i + 1].isdigit()):
                 num = ""
+
                 while i < len(line) and (line[i].isdigit() or line[i] == '.' or line[i] == '-'):
                     num += line[i]
                     i += 1
@@ -195,6 +198,7 @@ class Lexer:
                 continue
             
             i += 1
+            
 
             """ developer notes:
                 need to add handle cases for delimiters, bools, cond statements, etc.
