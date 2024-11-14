@@ -1,5 +1,3 @@
-HAI
-    I HAS A var1 ITZ "some" 
+HAI  
     VISIBLE "Hello World"
-    VISIBLE var1
 KTHXBYE
