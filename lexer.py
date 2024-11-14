@@ -8,7 +8,10 @@ TOKEN_TYPES = {
     "OPERATOR": "OPERATOR",
     "DELIMITER": "DELIMITER",
     "COMMENT": "COMMENT",
-    "WHITESPACE": "WHITESPACE"
+    "WHITESPACE": "WHITESPACE",
+    "TROOF": "TROOF",
+    "NUMBR": "NUMBR",
+    "NUMBAR": "NUMBAR"
 }
 
 # LOLCODE keywords
@@ -107,8 +110,28 @@ class Lexer:
     def tokenizer(line):
         tokens = []
         i = 0
+        
+        # Boolean keywords
+        BOOLEAN_VALUES = {
+            "WIN": Token(TOKEN_TYPES["TROOF"], True),
+            "FAIL": Token(TOKEN_TYPES["TROOF"], False),
+            "NOOB": Token(TOKEN_TYPES["LITERAL"], None),
+        }
+        
         while i < len(line):
             char = line[i]
+            
+            # Handle boolean 
+            found_bool = False
+            for found_bool, token in BOOLEAN_VALUES.items():
+                if line[i:].upper().startswith(found_bool):
+                    tokens.append(token)
+                    i += len(found_bool)
+                    found_bool = True
+                    break
+            
+            if found_bool:
+                continue
         
             # Ignore whitespaces
             if char.isspace():
