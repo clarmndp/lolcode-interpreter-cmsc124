@@ -1,8 +1,9 @@
+import re
+
 # We define token types for lexical analysis
 TOKEN_TYPES = {
     "KEYWORD": "KEYWORD",
     "STRING": "STRING",
-    "NUMBER": "NUMBER",
     "LITERAL": "LITERAL",
     "IDENTIFIER": "IDENTIFIER",
     "OPERATOR": "OPERATOR",
@@ -150,13 +151,20 @@ class Lexer:
                 continue
             
             # Handle numbers
-            if char.isdigit():
+            if char.isdigit() or (char == '-' and i + 1 < len(line) and line[i + 1].isdigit()):
                 num = ""
-                while i < len(line) and (line[i].isdigit() or line[i] == '.'):
+                while i < len(line) and (line[i].isdigit() or line[i] == '.' or line[i] == '-'):
                     num += line[i]
                     i += 1
-                tokens.append(Token(TOKEN_TYPES["NUMBER"], num))
+                    
+                # Check if num is NUMBAR
+                if re.match(r'^-?\d*(\.)\d+$', num):
+                    tokens.append(Token(TOKEN_TYPES["NUMBAR"], float(num)))
+                # Check if num is NUMBR
+                elif re.match(r'^-?\d+$', num):
+                    tokens.append(Token(TOKEN_TYPES["NUMBR"], int(num)))
                 continue
+
             
             # Handle keywords and identifiers
             if char.isalpha():
