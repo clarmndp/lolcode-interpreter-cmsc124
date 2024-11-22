@@ -1,4 +1,12 @@
 # We define token types for lexical analysis
+import re
+string_lit = r'"[^"]*"'
+numbr= r"-?\d+"
+addition= r"SUM OF"
+space= r"[:space:]"
+an= r"AN"
+equal= r"R"
+
 TOKEN_TYPES = {
     "KEYWORD": "KEYWORD",
     "STRING": "STRING",
@@ -109,96 +117,117 @@ class Lexer:
     # We convert source code by line into tokens
     def definer(line):
         tokens = []
-        i = 0
-        
-        # Boolean keywords
+        # Boolean keywords  
         BOOLEAN_VALUES = {
             "WIN": Token(TOKEN_TYPES["TROOF"], True),
             "FAIL": Token(TOKEN_TYPES["TROOF"], False),
             "NOOB": Token(TOKEN_TYPES["LITERAL"], None),
         }
-        while i < len(line):
-            char = line[i]
-            print(i)
-            # Handle boolean 
-            found_bool = False
-<<<<<<< HEAD
-            for found_bool, token in BOOLEAN_VALUES.items():
-                if line[i].upper().startswith(found_bool):
-                    print(token)
-                    tokens.append(token)
-                    i += len(found_bool)
-=======
-            for bool_value in BOOLEAN_VALUES:
-                if line[i:].upper().startswith(bool_value):
-                    tokens.append(BOOLEAN_VALUES[bool_value])
-                    i += len(bool_value)
->>>>>>> 8ae237190c6e5bf5a59c1644575e016517dbc635
-                    found_bool = True
-                    break
-
-            if found_bool:
-                continue
+        chars=list(line) # Seperate into characters
         
-            # Ignore whitespaces
-            if char.isspace():
-                i += 1
-                continue
-            
-            # Handle strings
-            if char == '"':
-                string_value = ""
-                i += 1  # Skip opening quote
-                while i < len(line) and line[i] != '"':
-                    
-                    string_value += line[i]
-                    i += 1
-                i += 1  # Skip closing quote
-                tokens.append(Token(TOKEN_TYPES["STRING"], string_value))
-                continue
-            
-            # Handle numbers
-            if char.isdigit():
-                num = ""
-                while i < len(line) and (line[i].isdigit() or line[i] == '.'):
-                    print('test')
-                    num += line[i]
-                    i += 1
-                tokens.append(Token(TOKEN_TYPES["NUMBER"], num))
-                continue
-            
-            # Handle keywords and identifiers
-            if char.isalpha():
-                word = ""
-                while i < len(line) and line[i].isalnum():  # Removed space condition
-                    word += line[i]
-                    i += 1
-                if word in KEYWORDS:
-                    tokens.append(Token(TOKEN_TYPES["KEYWORD"], word))
-                else:
-                    tokens.append(Token(TOKEN_TYPES["IDENTIFIER"], word))
-                continue
-            
-            # Handle operators
-            if char in "+-*/=<>!":
-                tokens.append(Token(TOKEN_TYPES["OPERATOR"], char))
-                i += 1
-                continue
-            
-            # Handle comments
-            if char == '#':
-                comment = ""
-                i += 1
-                while i < len(line):
-                    comment += line[i]
-                    i += 1
-                tokens.append(Token(TOKEN_TYPES["COMMENT"], comment))
-                continue
-            
-            i += 1
+        temp_str=""
+        for character in chars:
+            temp_str+=character
+            if re.search(space,temp_str):
+                temp_str=""
+                pass
+            elif temp_str == "VISIBLE":
+                tokens.append(("expression", temp_str.strip()))
+                temp_str=""
+            elif re.search(string_lit, temp_str):
+                
+                tokens.append((TOKEN_TYPES["STRING"],temp_str))
+                temp_str=""
+            elif re.search(addition,temp_str):
+                
+                tokens.append(("arithmetic_operator",temp_str.strip()))
+                temp_str=""
+            elif re.search(an,temp_str):
+                tokens.append(("delimeter", temp_str))
+                temp_str=""
+            elif re.search(numbr,temp_str):
+                tokens.append((TOKEN_TYPES["NUMBR"], int(temp_str)))
+                temp_str=""
             
 
-            """ developer notes:
-                need to add handle cases for delimiters, bools, cond statements, etc.
-            """
+                
+    
+        # while i < len(line):
+        #     char = line[i]
+        #     print(line)
+            #
+            #  # Handle boolean 
+            # found_bool = False
+            # for bool_value in BOOLEAN_VALUES:
+            #     if line[i:].upper().startswith(bool_value):
+            #         print(BOOLEAN_VALUES[bool_value])
+            #         tokens.append(BOOLEAN_VALUES[bool_value])
+            #         i += len(bool_value)
+            #         found_bool = True
+            #         break
+            # if found_bool:
+            #     continue
+        
+            # # Ignore whitespaces
+            # if char.isspace():
+            #     i += 1
+            #     continue
+            
+            # # Handle strings
+            # if char == '"':
+            #     string_value = ""
+            #     i += 1  # Skip opening quote
+            #     while i < len(line) and line[i] != '"':
+                    
+            #         string_value += line[i]
+            #         i += 1
+            #     i += 1  # Skip closing quote
+            #     tokens.append(Token(TOKEN_TYPES["STRING"], string_value))
+            #     continue
+            
+            # # Handle numbers
+            # if char.isdigit():
+            #     num = ""
+            #     while i < len(line) and (line[i].isdigit() or line[i] == '.'):
+                    
+            #         num += line[i]
+            #         i += 1
+            #     tokens.append(Token(TOKEN_TYPES["NUMBER"], num))
+            #     continue
+            
+            # # Handle keywords and identifiers
+            # if char.isalpha():
+            #     word = ""
+            #     while i < len(line) and line[i].isalnum():  # Removed space condition
+            #         word += line[i]
+            #         i += 1
+            #     if word in KEYWORDS:
+            #         tokens.append(Token(TOKEN_TYPES["KEYWORD"], word))
+            #     else:
+            #         tokens.append(Token(TOKEN_TYPES["IDENTIFIER"], word))
+            #     continue
+            
+            # # Handle operators
+            # if char in "+-*/=<>!":
+            #     tokens.append(Token(TOKEN_TYPES["OPERATOR"], char))
+            #     i += 1
+            #     continue
+            
+            # # Handle comments
+            # if char == '#':
+            #     comment = ""
+            #     i += 1
+            #     while i < len(line):
+            #         comment += line[i]
+            #         i += 1
+            #     tokens.append(Token(TOKEN_TYPES["COMMENT"], comment))
+            #     continue
+            
+            # i += 1
+            
+
+        """ developer notes:
+            need to add handle cases for delimiters, bools, cond statements, etc.
+        """
+        
         return tokens
