@@ -1,3 +1,5 @@
+from lexer import visible
+import re
 
 class Node:
     def __init__(self, value, left=None, right=None):
@@ -7,7 +9,7 @@ class Node:
 class Parser(object):
     def __init__(self,tokens):
         self.tokens=tokens
-        print(f"test{self.tokens}")
+        
         self.index=0
     def advance(self):
         self.token_index +=1
@@ -20,19 +22,108 @@ class Parser(object):
 
     def parse(self):
         return self.parse_expression()
+    def arithmetic_expression(self,ar_operation):
+        print("+++++++++++++++++++++++++++++++++++++++")
+        print(ar_operation)
+        for i in range(len(ar_operation)-1,-1, -1):
+                    
+            if not re.search(r"NUMBR",ar_operation[i][0]) and not re.search(r"NUMBAR",ar_operation[i][0])  and re.search(r"SUM OF", ar_operation[i][1]):
+                print("Adding")
+                # Find the an seperator
+                temp_index=i #Holds the index of the AN of that keyword
+                
+                while 1:
+                    if  not re.search(r"NUMBR",ar_operation[temp_index][0]) and re.search(r"AN", ar_operation[temp_index][1]):
+                        break
+                    temp_index+=1
+                
+                temp_val= ar_operation[temp_index-1][1] + ar_operation[temp_index+1][1]
+
+                temp_val = ("NUMBR", temp_val)
+                ar_operation.insert(i,temp_val)
+                
+                #pop the sum of, left operand , "AN" , and ,right operand
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+                
+            elif not re.search(r"NUMBR",ar_operation[i][0]) and not re.search(r"NUMBAR",ar_operation[i][0]) and re.search(r"DIFF OF", ar_operation[i][1]):
+                print("SUBTRACTING")
+                temp_index=i #Holds the index of the AN of that keyword
+               
+                while 1:
+                    if  not re.search(r"NUMBR",ar_operation[temp_index][0]) and re.search(r"AN", ar_operation[temp_index][1]):
+                        break
+                    temp_index+=1
+                temp_val= ar_operation[temp_index-1][1] - ar_operation[temp_index+1][1]
+                if isinstance(temp_val,int):
+
+                    temp_val = ("NUMBR", temp_val)
+                else:
+                    temp_val = ("NUMBAR",temp_val)
+                ar_operation.insert(i,temp_val)
+                #pop the sum of, left operand , "AN" , and ,right operand
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+            elif not re.search(r"NUMBR",ar_operation[i][0]) and not re.search(r"NUMBAR",ar_operation[i][0]) and re.search(r"PRODUKT OF", ar_operation[i][1]):
+                print("MULTIPLYING")
+                temp_index=i #Holds the index of the AN of that keyword
+               
+                while 1:
+                    if  not re.search(r"NUMBR",ar_operation[temp_index][0]) and re.search(r"AN", ar_operation[temp_index][1]):
+                        break
+                    temp_index+=1
+               
+                temp_val= ar_operation[temp_index-1][1] * ar_operation[temp_index+1][1]
+                if isinstance(temp_val,int):
+
+                    temp_val = ("NUMBR", temp_val)
+                else:
+                    temp_val = ("NUMBAR",temp_val)
+                ar_operation.insert(i,temp_val)
+                #pop the sum of, left operand , "AN" , and ,right operand
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+            elif not re.search(r"NUMBR",ar_operation[i][0]) and not re.search(r"NUMBAR",ar_operation[i][0]) and re.search(r"QUOSHUNT OF", ar_operation[i][1]):
+                print("DIVIDING")
+                temp_index=i #Holds the index of the AN of that keyword
+               
+                while 1:
+                    if  not re.search(r"NUMBR",ar_operation[temp_index][0]) and re.search(r"AN", ar_operation[temp_index][1]):
+                        break
+                    temp_index+=1
+               
+                temp_val= ar_operation[temp_index-1][1] / ar_operation[temp_index+1][1]
+                if isinstance(temp_val,int):
+
+                    temp_val = ("NUMBR", temp_val)
+                else:
+                    temp_val = ("NUMBAR",temp_val)
+                ar_operation.insert(i,temp_val)
+                #pop the sum of, left operand , "AN" , and ,right operand
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+                ar_operation.pop(i+1)
+        print(ar_operation)
+        return ar_operation[0][1]
     def parse_expression(self):
-        print(f"test{self.tokens}")
-        # if self.index < len(self.tokens) and self.tokens[self.index][0] == "SUM_OF":
-        #     self.index += 1  # Consume SUM OF
-        #     left = self.parse_expression()  # Parse left operand
-        #     if self.index < len(self.tokens) and self.tokens[self.index][0] == "AN":
-        #         self.index += 1  # Consume AN
-        #         right = self.parse_expression()  # Parse right operand
-        #         return Node("SUM_OF", left, right)
-        # elif self.index < len(self.tokens) and self.tokens[self.index][0] == "NUMBER":
-        #     node = Node(int(self.tokens[self.index][1]))
-        #     self.index += 1  # Consume NUMBER
-        #     return node
-        # elif self.index < len(self.tokens) and self.tokens[self.index][0] == "VISIBLE":
-        #     node = Node()
-        # raise ValueError("Invalid syntax")
+       
+        if re.search(visible, self.tokens[0][1]):
+            if re.search(r"STRING", self.tokens[1][0]):
+                print("STRING LITERAL")
+                print(self.tokens[1][1].strip('"'))
+            elif re.search(r"arithmetic_operator", self.tokens[1][0]):
+                #Find the last arithmetic opreation
+               
+                
+                temp= self.tokens.copy()
+                temp.pop(0) #Pop the visible keyword
+                print(f"RESULT: {self.arithmetic_expression(temp)}")
+
+

@@ -56,7 +56,7 @@ def interpreter(filename):
                 if line:  # Skip empty lines
                     line=line.strip() # Rmoves the white spaces around the line
                     tokenize= Lexer.definer(line)
-                    print(tokenize)
+                   
                     parse= parser.Parser(tokenize)
                     parse_tree = parse.parse()
                 
