@@ -109,7 +109,10 @@ KEYWORDS = {
     # Infinite arity
     "MKAY": "infinite_arity_end"
 }
-keyword= ["SUM OF", "VISIBLE", "DIFF OF","PRODUKT OF", "QUOSHUNT OF"]
+keyword= ["SUM OF", "VISIBLE", "DIFF OF","PRODUKT OF", "QUOSHUNT OF",
+          "BOTH SAEM", "DIFFRINT", "BIGGR OF", "SMALLR OF",
+          "BOTH OF", "EITHER OF", "WON OF", "NOT","WIN","FAIL"
+          ]
 
 class Token:
     """ Parameter 'type' provides the category for TOKEN_TYPES
@@ -132,7 +135,7 @@ class Lexer:
         # token_elem=r'|'.join([re.escape(keyword_elem) for keyword_elem in keyword]) + r'|\S+' # Seperate by space
         token_elem =  r'|'.join([re.escape(keyword_elem) for keyword_elem in keyword]) +r'|'+r'"[^"]*"|\S+'+r'|' +r"-?\d+"+r'|'+r'\S+'
         token_elem=re.findall(token_elem,line)
-        # print(token_elem)
+        print(token_elem)
         for temp_str in token_elem:
             if temp_str == "KTHXBYE":
                 
@@ -158,13 +161,29 @@ class Lexer:
             elif re.search(multiplication,temp_str):
                 tokens.append(("arithmetic_operator",temp_str.strip()))
                 
+            elif re.search(r"BOTH SAEM", temp_str):
+                tokens.append(("comparison_operator",temp_str))
+            elif re.search(r"DIFFRINT", temp_str):
+                tokens.append(("comparison_operator",temp_str))
+            elif re.search(r"BOTH OF", temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"EITHER OF", temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"WON OF", temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"NOTF", temp_str):
+                tokens.append(("boolean_operator",temp_str))
             elif re.search(an,temp_str):
                 tokens.append(("delimeter", temp_str))
             elif re.fullmatch(numbar,temp_str):
                 tokens.append((TOKEN_TYPES["NUMBAR"], float(temp_str)))
             elif re.fullmatch(numbr,temp_str):
                 tokens.append((TOKEN_TYPES["NUMBR"], int(temp_str)))
-                
+            elif re.search(r"WIN", temp_str):
+                tokens.append((TOKEN_TYPES["TROOF"],"WIN"))
+            elif re.search(r"FAIL", temp_str):
+                tokens.append((TOKEN_TYPES["TROOF"],"FAIL"))
+            
 
                 
     
