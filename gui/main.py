@@ -12,8 +12,10 @@
 """
 
 import sys
-from lexer import Lexer
+from gui.lexer import Lexer
 import re
+import threading
+from io import StringIO
 symbol_table = {}
 lexeme_table=[]
 def interpreter(filename):
