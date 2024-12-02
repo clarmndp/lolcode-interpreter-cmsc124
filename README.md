@@ -1,9 +1,24 @@
 # lolcode-interpreter-cmsc124
 An interpreter for LOLCODE language syntax written in Python.
 
+## Prerequisites
+### Python
+Before running the interpreter, please ensure **Python** (Windows) or **Python3** (Linux/MacOS) is installed.
+> [Installing Python](https://www.python.org/downloads/)
+
+### Kivy
+Kivy is a free and open-source Python GUI framework. This LOLCODE interpreter is built using Kivy.
+
+Install **Kivy** by using their official installation guide.
+> [Installing **Kivy**](https://kivy.org/doc/stable/gettingstarted/installation.html)
+
 ## Running the application locally
-    python main.py file.lol
-    python3 main.py file.lol
+1. Navigate to the directory the repository is installed in.
+2. Open the terminal and enter the following command:
+    #### For Windows
+        $ python interpreter.py
+    #### For Linux/MacOS
+        $ python3 interpreter.py
 
 ## Developer guidelines
 Always take note of the following notes.
