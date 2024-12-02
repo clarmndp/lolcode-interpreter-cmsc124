@@ -1,3 +1,19 @@
+"""
+# LOLCODE Interpreter written in Python
+    
+    Authors:
+        Diño, John Matthew D.
+        Mandap, Clarence P.
+        Pore, Richmond Michael B.
+
+    Components/ modules:
+        lexer.py - Handles tokenization and lexical analysis
+        interpreter.py - Ties all components together and handles program execution
+
+    GUI Framework:
+        Kivy (https://kivy.org/)
+"""
+
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -20,7 +36,9 @@ class MainWindow(App):
         super(MainWindow, self).__init__(**kwargs)
         self.current_file = None
         Window.title = "LOLCODE Interpreter"
-        self.output_buffer = StringIO()  # Buffer for capturing output
+        self.output_buffer = StringIO() 
+        self.current_line_index = 0  # track the current line index
+        self.lines = []  # store lines from the file
 
     def build(self):
         layout = BoxLayout(orientation='horizontal')
@@ -106,7 +124,6 @@ class MainWindow(App):
         if not filename.endswith('.lol'):
             self.console_output.text += "Error: File must have '.lol' extension\n"
             return
-        
         try:
             with open(filename, 'r') as file:
                 # Read the first line and check for HAI
@@ -116,42 +133,53 @@ class MainWindow(App):
                     self.console_output.text += "Error: Invalid Starting Keyword\n"
                     return
 
-                # Proceed to the rest of the LOLCODE file
-                for line in file:
-                    line = line.strip()  # Removes the white spaces around the line
-                    if line:  # Skip empty lines
-                        if line.startswith("VISIBLE"):
-                            tokenized = line.split("VISIBLE ")
-                            tokenized[0] = "VISIBLE"
-                            if tokenized[1].startswith("\""):  # String literal printing
-                                tokenized[1] = tokenized[1].strip("\"")
-                                self.console_output.text += f"{tokenized[1]}\n"
-                            else:
-                                # Valid variable
-                                if tokenized[1] in symbol_table.keys():
-                                    self.console_output.text += f"{symbol_table[tokenized[1]]}\n"
-                                else:
-                                    self.console_output.text += f"Variable {tokenized[1]} does not exist in the dictionary\n"
-                        elif line.startswith("I HAS A"):
-                            tokenized = line.split("I HAS A ")
-                            tokenized.pop(0)
-                            tokenized = tokenized[0].split(" ")
-                            tokenized.insert(0, "I HAS A")
-                            if re.match(r"^[A-Z a-z]", tokenized[1]):  # Valid variable name
-                                symbol_table[tokenized[1]] = tokenized[3]
-                            else:
-                                self.console_output.text += "Variable Error: Not a valid variable name\n"
-                        elif line.startswith("GIMMEH"):
-                            tokenized = line.split("GIMMEH ")
-                            tokenized[0] = "GIMMEH"
-                            if tokenized[1] not in symbol_table.keys():
-                                self.console_output.text += f"Variable {tokenized[1]} is not known\n"
-                                return
-                            else:
-                                self.prompt_for_input(tokenized[1])  # prompt for input
+                self.lines = file.readlines()  # Read all lines into a list
+                self.current_line_index = 0  # Reset line index
+
+                # Start executing lines
+                self.execute_next_line()
 
         except FileNotFoundError:
             self.console_output.text += f"Error: Could not find file '{filename}'\n"
+
+    def execute_next_line(self):
+        while self.current_line_index < len(self.lines):
+            line = self.lines[self.current_line_index].strip()  # Removes the white spaces around the line
+            if line:  # Skip empty lines
+                if line.startswith("VISIBLE"):
+                    tokenized = line.split("VISIBLE ")
+                    tokenized[0] = "VISIBLE"
+                    if tokenized[1].startswith("\""):  # String literal printing
+                        tokenized[1] = tokenized[1].strip("\"")
+                        self.console_output.text += tokenized[1] + "\n"
+                    else:
+                        # Valid variable
+                        if tokenized[1] in symbol_table.keys():
+                            self.console_output.text += str(symbol_table[tokenized[1]]) + "\n"
+                        else:
+                            self.console_output.text += f"Variable {tokenized[1]} does not exist in the dictionary\n"
+                elif line.startswith("I HAS A"):
+                    tokenized = line.split("I HAS A ")
+                    tokenized.pop(0)
+                    tokenized = tokenized[0].split(" ")
+                    tokenized.insert(0, "I HAS A")
+
+                    if re.match(r"^[A-Za-z]", tokenized[1]):  # Valid variable name
+                        symbol_table[tokenized[1]] = tokenized[3]
+                    else:
+                        self.console_output.text += "Variable Error: Not a valid variable name\n"
+
+                elif line.startswith("GIMMEH"):
+                    tokenized = line.split("GIMMEH ")
+                    tokenized[0] = "GIMMEH"
+                    if tokenized[1] not in symbol_table.keys():
+                        self.console_output.text += f"Variable {tokenized[1]} is not known\n"
+                        return
+                    else:
+                        self.prompt_for_input(tokenized[1])  # prompt for input
+                        return  # break out of the loop to wait for input
+
+            self.current_line_index += 1  # move to the next line
 
     def run_lolcode(self, instance):
         if self.current_file:  # check if a file is selected
@@ -177,10 +205,12 @@ class MainWindow(App):
 
         def on_submit(instance):
             value = input_box.text.strip()  # get input from user
-            if value:  # Check if the input is not empty
+            if value:  # check if the input is not empty
                 symbol_table[variable_name] = value
                 self.console_output.text += f"Value for {variable_name} set to {value}\n"
                 popup.dismiss()
+                self.current_line_index += 1  # move to the next line after input
+                self.execute_next_line()  # call function to execute the next line
             else:
                 self.console_output.text += "Error: Input cannot be empty.\n"
 
@@ -197,7 +227,6 @@ class MainWindow(App):
         popup_content.add_widget(cancel_button)
 
         popup = Popup(title="Input Required", content=popup_content, size_hint=(0.8, 0.4))
-        popup.open()
-
+        popup.open() 
 if __name__ == '__main__':
     MainWindow().run()
