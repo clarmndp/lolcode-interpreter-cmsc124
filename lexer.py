@@ -108,7 +108,7 @@ class Token:
 
 class Lexer:  
     # We convert source code by line into tokens
-    def definer(line):
+    def definer(self, line):
         tokens = []
         i = 0
         
