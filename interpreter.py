@@ -13,19 +13,18 @@
     GUI Framework:
         Kivy (https://kivy.org/)
 """
-
+# Kivy functions used
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
 from kivy.graphics import Color, Rectangle
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.textinput import TextInput
 from kivy.core.window import Window
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
+
 import sys
 from io import StringIO
-import threading
 import re
 from lexer import Lexer  # import the Lexer class
 
@@ -119,6 +118,12 @@ class MainWindow(App):
         self.bg_rect2.pos = instance.pos
         self.bg_rect2.size = instance.size
 
+    def update_rect3(self, instance, value):
+        self.rect3.pos = instance.pos
+        self.rect3.size = instance.size
+        self.bg_rect3.pos = instance.pos
+        self.bg_rect3.size = instance.size
+
     def interpreter(self, filename):
         # We first check if the file extension is .lol
         if not filename.endswith('.lol'):
@@ -135,6 +140,15 @@ class MainWindow(App):
 
                 self.lines = file.readlines()  # Read all lines into a list
                 self.current_line_index = 0  # Reset line index
+
+                # create an instance of the Lexer
+                lexer = Lexer()
+
+                # tokenize each line and store the tokens
+                self.tokens = []
+                for line in self.lines:
+                    tokens = lexer.definer(line.strip())  # tokenize the line
+                    self.tokens.extend(tokens)  # add the tokens to the list
 
                 # Start executing lines
                 self.execute_next_line()
@@ -190,12 +204,6 @@ class MainWindow(App):
             self.interpreter(self.current_file)
         else:
             self.console_output.text += "Error: No file selected.\n"
-
-    def update_rect3(self, instance, value):
-        self.rect3.pos = instance.pos
-        self.rect3.size = instance.size
-        self.bg_rect3.pos = instance.pos
-        self.bg_rect3.size = instance.size
 
     def prompt_for_input(self, variable_name):
         # create a popup to get user input
