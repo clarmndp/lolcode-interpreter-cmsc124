@@ -1,0 +1,12 @@
+HAI  
+    WAZZUP
+    I HAS A var1 ITZ 4
+    I HAS A var2 ITZ 6
+    I HAS A var3 ITZ SMOOSH "test" AN "123" AN "456"
+    I HAS A var4 ITZ BOTH SAEM 3 AN 3 
+    BUHBYE
+    VISIBLE DIFFRINT var1 AN BIGGR var1 AN 3
+    VISIBLE BOTH SAEM var1 AN 4
+    VISIBLE SMOOSH "test" AN "123"
+    VISIBLE var3
+KTHXBYE

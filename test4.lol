@@ -1,0 +1,11 @@
+HAI  
+    WAZZUP
+    I HAS A x ITZ WIN
+    I HAS A y ITZ FAIL
+    I HAS A z ITZ FAIL
+    I HAS A tet ITZ EITHER OF x an y
+    I HAS A var1 ITZ 2
+    I HAS A comp ITZ BOTH SAEM y AN z 
+    BUHBYE
+    VISIBLE ANY OF NOT x AN BOTH OF y AN z AN EITHER OF z AN y MKAY
+KTHXBYE

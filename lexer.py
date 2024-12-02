@@ -11,7 +11,7 @@ space= r"[\s]"
 an= r"AN"
 equal= r"R"
 visible= r"VISIBLE"
-
+varname =r"[A-Za-z][A-Za-z\d]*"
 TOKEN_TYPES = {
     "KEYWORD": "KEYWORD",
     "STRING": "STRING",
@@ -111,7 +111,9 @@ KEYWORDS = {
 }
 keyword= ["SUM OF", "VISIBLE", "DIFF OF","PRODUKT OF", "QUOSHUNT OF",
           "BOTH SAEM", "DIFFRINT", "BIGGR OF", "SMALLR OF",
-          "BOTH OF", "EITHER OF", "WON OF", "NOT","WIN","FAIL"
+          "BOTH OF", "EITHER OF", "WON OF", "NOT","WIN","FAIL", "ALL OF","MKAY","ANY OF",
+          "I HAS A", "ITZ","WAZZUP","BUHBYE"
+          "SMOOSH"
           ]
 
 class Token:
@@ -135,7 +137,7 @@ class Lexer:
         # token_elem=r'|'.join([re.escape(keyword_elem) for keyword_elem in keyword]) + r'|\S+' # Seperate by space
         token_elem =  r'|'.join([re.escape(keyword_elem) for keyword_elem in keyword]) +r'|'+r'"[^"]*"|\S+'+r'|' +r"-?\d+"+r'|'+r'\S+'
         token_elem=re.findall(token_elem,line)
-        print(token_elem)
+        # print(token_elem)
         for temp_str in token_elem:
             if temp_str == "KTHXBYE":
                 
@@ -171,18 +173,42 @@ class Lexer:
                 tokens.append(("boolean_operator",temp_str))
             elif re.search(r"WON OF", temp_str):
                 tokens.append(("boolean_operator",temp_str))
-            elif re.search(r"NOTF", temp_str):
+            elif re.search(r"NOT", temp_str):
                 tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"ALL OF",temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"ANY OF",temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"MKAY", temp_str):
+                tokens.append(("inf_arity_delimeter",temp_str))
+            elif re.search(r"BIGGR", temp_str):
+                tokens.append(("relational_operation",temp_str))
+            elif re.search(r"SMALLR", temp_str):
+                tokens.append(("relational_operation",temp_str)) 
             elif re.search(an,temp_str):
                 tokens.append(("delimeter", temp_str))
-            elif re.fullmatch(numbar,temp_str):
-                tokens.append((TOKEN_TYPES["NUMBAR"], float(temp_str)))
-            elif re.fullmatch(numbr,temp_str):
-                tokens.append((TOKEN_TYPES["NUMBR"], int(temp_str)))
+            elif re.search(r"WAZZUP",temp_str):
+                tokens.append(("declaration_start", temp_str))
+            elif re.search(r"BUHBYE",temp_str):
+                tokens.append(("declaration_end", temp_str))
+            elif re.search(r"I HAS A",temp_str):
+                tokens.append(("declaration_keyword", temp_str))
+            elif re.search(r"ITZ",temp_str):
+                tokens.append(("declaration_delimiter", temp_str))
             elif re.search(r"WIN", temp_str):
                 tokens.append((TOKEN_TYPES["TROOF"],"WIN"))
             elif re.search(r"FAIL", temp_str):
                 tokens.append((TOKEN_TYPES["TROOF"],"FAIL"))
+            
+            elif re.search(r"SMOOSH", temp_str):
+                tokens.append(("concatenation", temp_str))
+            elif re.search(varname,temp_str):
+                tokens.append(("variable", temp_str))
+            elif re.fullmatch(numbar,temp_str):
+                tokens.append((TOKEN_TYPES["NUMBAR"], float(temp_str)))
+            elif re.fullmatch(numbr,temp_str):
+                tokens.append((TOKEN_TYPES["NUMBR"], int(temp_str)))
+           
             
 
                 
