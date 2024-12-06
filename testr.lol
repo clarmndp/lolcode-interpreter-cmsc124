@@ -1,0 +1,8 @@
+HAI  
+    WAZZUP
+    I HAS A var1 ITZ 4
+
+    BUHBYE
+    var1 R PRODUKT OF 2 AN 5
+    GIMMEH var1
+KTHXBYE
