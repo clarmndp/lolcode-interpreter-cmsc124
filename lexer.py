@@ -1,9 +1,21 @@
-import re
-
 # We define token types for lexical analysis
+import re
+string_lit =  r'"[^"]*"'
+numbr= r"-?\d+"
+numbar= r"-?\d*(\.)\d+"
+addition= r"SUM OF"
+subtraction = r"DIFF OF"
+multiplication = r"PRODUKT OF"
+division= r"QUOSHUNT OF"
+space= r"[\s]"
+an= r"AN"
+equal= r"R"
+visible= r"VISIBLE"
+varname =r"[A-Za-z][A-Za-z\d]*"
 TOKEN_TYPES = {
     "KEYWORD": "KEYWORD",
     "STRING": "STRING",
+    "NUMBER": "NUMBER",
     "LITERAL": "LITERAL",
     "IDENTIFIER": "IDENTIFIER",
     "OPERATOR": "OPERATOR",
@@ -97,6 +109,14 @@ KEYWORDS = {
     # Infinite arity
     "MKAY": "infinite_arity_end"
 }
+keyword= ["SUM OF", "VISIBLE","+", "DIFF OF","PRODUKT OF", "QUOSHUNT OF",
+          "BOTH SAEM", "DIFFRINT", "BIGGR OF", "SMALLR OF","MOD OF",
+          "BOTH OF", "EITHER OF", "WON OF", "NOT","WIN","FAIL", "ALL OF","MKAY","ANY OF",
+          "I HAS A", "ITZ","WAZZUP","BUHBYE", 
+          "SMOOSH",
+          "R","MAEK","IS NOW A"
+          "GIMMEH"
+          ]
 
 class Token:
     """ Parameter 'type' provides the category for TOKEN_TYPES
@@ -108,99 +128,107 @@ class Token:
 
 class Lexer:  
     # We convert source code by line into tokens
-    def definer(self, line):
+    def definer(line):
         tokens = []
-        i = 0
-        
-        # Boolean keywords
+        # Boolean keywords  
         BOOLEAN_VALUES = {
             "WIN": Token(TOKEN_TYPES["TROOF"], True),
             "FAIL": Token(TOKEN_TYPES["TROOF"], False),
             "NOOB": Token(TOKEN_TYPES["LITERAL"], None),
         }
-        while i < len(line):
-            char = line[i]
-            print(i)
-            # Handle boolean 
-            found_bool = False
+        # token_elem=r'|'.join([re.escape(keyword_elem) for keyword_elem in keyword]) + r'|\S+' # Seperate by space
+        token_elem =  r'|'.join([re.escape(keyword_elem) for keyword_elem in keyword]) +r'|'+r'"[^"]*"|\S+'+r'|' +r"-?\d+"+r'|'+r'\S+'
+        token_elem=re.findall(token_elem,line)
+        # print(token_elem)
+        for temp_str in token_elem:
+            if temp_str == "KTHXBYE":
+                
+                tokens.append(("end", temp_str.strip()))
+            
+            elif re.search(visible, temp_str):
+                tokens.append(("expression", temp_str.strip()))
+                
+            elif re.search(string_lit, temp_str):
+               
+                tokens.append((TOKEN_TYPES["STRING"],temp_str.strip()))
+                
+            elif re.search(addition,temp_str):
+                tokens.append(("arithmetic_operator",temp_str.strip()))
+                
+            elif re.search(subtraction,temp_str):
+                tokens.append(("arithmetic_operator",temp_str.strip()))
+               
+            elif re.search(division,temp_str):
+                tokens.append(("arithmetic_operator",temp_str.strip()))
+                
+            elif re.search(multiplication,temp_str):
+                tokens.append(("arithmetic_operator",temp_str.strip()))
+            elif re.search(r"MOD OF",temp_str):
+                tokens.append(("arithmetic_operator",temp_str))
+            elif re.search(r"BOTH SAEM", temp_str):
+                tokens.append(("comparison_operator",temp_str))
+            elif re.search(r"DIFFRINT", temp_str):
+                tokens.append(("comparison_operator",temp_str))
+            elif re.search(r"BOTH OF", temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"EITHER OF", temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"WON OF", temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"NOT", temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"ALL OF",temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"ANY OF",temp_str):
+                tokens.append(("boolean_operator",temp_str))
+            elif re.search(r"MKAY", temp_str):
+                tokens.append(("inf_arity_delimeter",temp_str))
+            elif re.search(r"BIGGR OF", temp_str):
+                tokens.append(("arithmetic_operator",temp_str))
+            elif re.search(r"SMALLR OF", temp_str):
+                tokens.append(("arithmetic_operator",temp_str)) 
+            elif re.search(an,temp_str):
+                tokens.append(("delimeter", temp_str))
+            elif re.search(r"WAZZUP",temp_str):
+                tokens.append(("declaration_start", temp_str))
+            elif re.search(r"BUHBYE",temp_str):
+                tokens.append(("declaration_end", temp_str))
+            elif re.search(r"I HAS A",temp_str):
+                tokens.append(("declaration_keyword", temp_str))
+            elif re.search(r"ITZ",temp_str):
+                tokens.append(("declaration_delimiter", temp_str))
+            elif re.search(r"WIN", temp_str):
+                tokens.append((TOKEN_TYPES["TROOF"],"WIN"))
+            elif re.search(r"FAIL", temp_str):
+                tokens.append((TOKEN_TYPES["TROOF"],"FAIL"))
+            
+            elif re.search(r"SMOOSH", temp_str):
+                tokens.append(("concatenation", temp_str))
+            elif re.search(r"R",temp_str):
+                tokens.append(("reassignment_delimeter",temp_str))
+            elif re.search(r"MAEK A", temp_str):
+                tokens.append(("typecasting_delimeter",temp_str))
+            elif re.search(r"IS NOW A", temp_str):
+                tokens.append(("typecasting_delimeter",temp_str))
+            elif re.search(r"GIMMEH", temp_str):
+                tokens.append(("input", temp_str))
+            elif re.search(r"\+", temp_str):
+                tokens.append(("visible_concat", temp_str))
+            elif re.search(varname,temp_str):
+                tokens.append(("variable", temp_str))
+            elif re.fullmatch(numbar,temp_str):
+                tokens.append((TOKEN_TYPES["NUMBAR"], float(temp_str)))
+            elif re.fullmatch(numbr,temp_str):
+                tokens.append((TOKEN_TYPES["NUMBR"], int(temp_str)))
+           
+            
 
-            for bool_value in BOOLEAN_VALUES:
-                if line[i:].upper().startswith(bool_value):
-                    tokens.append(BOOLEAN_VALUES[bool_value])
-                    i += len(bool_value)
-                    
-                    found_bool = True
-                    break
-
-            if found_bool:
-                continue
-        
-            # Ignore whitespaces
-            if char.isspace():
-                i += 1
-                continue
-            
-            # Handle strings
-            if char == '"':
-                string_value = ""
-                i += 1  # Skip opening quote
-                while i < len(line) and line[i] != '"':
-                    
-                    string_value += line[i]
-                    i += 1
-                i += 1  # Skip closing quote
-                tokens.append(Token(TOKEN_TYPES["STRING"], string_value))
-                continue
-            
-            # Handle numbers
-            if char.isdigit() or (char == '-' and i + 1 < len(line) and line[i + 1].isdigit()):
-                num = ""
-
-                while i < len(line) and (line[i].isdigit() or line[i] == '.' or line[i] == '-'):
-                    num += line[i]
-                    i += 1
-                    
-                # Check if num is NUMBAR
-                if re.match(r'^-?\d*(\.)\d+$', num):
-                    tokens.append(Token(TOKEN_TYPES["NUMBAR"], float(num)))
-                # Check if num is NUMBR
-                elif re.match(r'^-?\d+$', num):
-                    tokens.append(Token(TOKEN_TYPES["NUMBR"], int(num)))
-                continue
-
-            
-            # Handle keywords and identifiers
-            if char.isalpha():
-                word = ""
-                while i < len(line) and line[i].isalnum():  # Removed space condition
-                    word += line[i]
-                    i += 1
-                if word in KEYWORDS:
-                    tokens.append(Token(TOKEN_TYPES["KEYWORD"], word))
-                else:
-                    tokens.append(Token(TOKEN_TYPES["IDENTIFIER"], word))
-                continue
-            
-            # Handle operators
-            if char in "+-*/=<>!":
-                tokens.append(Token(TOKEN_TYPES["OPERATOR"], char))
-                i += 1
-                continue
-            
-            # Handle comments
-            if char == '#':
-                comment = ""
-                i += 1
-                while i < len(line):
-                    comment += line[i]
-                    i += 1
-                tokens.append(Token(TOKEN_TYPES["COMMENT"], comment))
-                continue
-            
-            i += 1
+                
+    
             
 
-            """ developer notes:
-                need to add handle cases for delimiters, bools, cond statements, etc.
-            """
+        """ developer notes:
+            need to add handle cases for delimiters, bools, cond statements, etc.
+        """
+        print(tokens)
         return tokens
