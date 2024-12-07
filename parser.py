@@ -781,3 +781,57 @@ class Parser(object):
                                 
                     else:
                         print("ERROR: Invalid Variable name")
+        if re.search(r"variable",self.tokens[0][0]) and re.search((r"reassignment_delimeter"),self.tokens[1][0]):
+            if len(self.tokens)>2:
+                if self.tokens[0][1] in symbol_table:
+                    temp1= self.tokens.copy() #Copy the token
+        
+                    varname = temp1.pop(0) #Put it into a temp variable and pop the varname
+                    temp1.pop(0) # Pop R
+                    print(f"Varname {varname[1]}")
+                    print(temp1) 
+                    #Evaluate the expression
+                    if re.search(r"STRING",temp1[0][0]):
+                        
+                        symbol_table[varname[1]]=temp1[0][1].strip('"')
+                    elif re.search(r"TROOF",temp1[0][0]):
+                        print("testi")
+                        symbol_table[varname[1]]=temp1[0][1]
+                    elif re.search(r"NUMBR", temp1[0][0]):
+                        symbol_table[varname[1]]= temp1[0][1]
+                    elif re.search(r"NUMBAR", temp1[0][0]):
+                        symbol_table[varname[1]]= temp1[0][1]
+                    elif re.search(r"arithmetic_operator", temp1[0][0]):                       
+                        temp= temp1.copy()
+                        print(f"RESULT: {self.arithmetic_expression(temp)}")
+                        # result=self.arithmetic_expression(temp)
+                        # print(result)
+                        print(varname[1])
+                        symbol_table[varname[1]]=self.arithmetic_expression(temp)
+                        print(f"SYMBOL TABLE {symbol_table}")
+                    elif re.search(r"comparison_operator",temp1[0][0]):
+                        temp= temp1.copy()
+                        
+                        val= self.comparsion(temp)
+                        symbol_table[varname[1]]= val[1]
+                    elif re.search(r"boolean_operator",temp1[0][0]):
+                        temp= temp1.copy()
+
+                        print(temp)
+                        val= self.boolean_expression(temp)
+                        symbol_table[varname[1]]= val[1]
+                    elif re.search(r"concatenation",temp1[0][0]):
+                        
+                        temp= temp1.copy()
+                        val = self.concat(temp)
+                        symbol_table[varname[1]]= val[1]
+                else:
+                    print("ERROR: Invalid Variable name")
+                    exit()
+            else:
+                print("ERROR: Missing Argument")
+                exit()
+        
+
+
+            

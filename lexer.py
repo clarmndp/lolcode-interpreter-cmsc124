@@ -113,7 +113,9 @@ keyword= ["SUM OF", "VISIBLE", "DIFF OF","PRODUKT OF", "QUOSHUNT OF",
           "BOTH SAEM", "DIFFRINT", "BIGGR OF", "SMALLR OF",
           "BOTH OF", "EITHER OF", "WON OF", "NOT","WIN","FAIL", "ALL OF","MKAY","ANY OF",
           "I HAS A", "ITZ","WAZZUP","BUHBYE"
-          "SMOOSH"
+          "SMOOSH",
+          "R",
+          "GIMMEH"
           ]
 
 class Token:
@@ -142,9 +144,8 @@ class Lexer:
             if temp_str == "KTHXBYE":
                 
                 tokens.append(("end", temp_str.strip()))
-               
+            
             elif re.search(visible, temp_str):
-                
                 tokens.append(("expression", temp_str.strip()))
                 
             elif re.search(string_lit, temp_str):
@@ -202,6 +203,11 @@ class Lexer:
             
             elif re.search(r"SMOOSH", temp_str):
                 tokens.append(("concatenation", temp_str))
+            elif re.search(r"R",temp_str):
+                tokens.append(("reassignment_delimeter",temp_str))
+            elif re.search(r"GIMMEH", temp_str):
+                tokens.append(("input", temp_str))
+
             elif re.search(varname,temp_str):
                 tokens.append(("variable", temp_str))
             elif re.fullmatch(numbar,temp_str):
