@@ -256,7 +256,7 @@ class Parser(object):
                 else:
                     if comp_exp[1][0]=="variable":
                         if comp_exp[1][1] in symbol_table:
-                            x= symbol_table[comp_exp[1][1]]
+                            x= symbol_table[comp_exp[1][1]] #assign that to x
 
                         else:
                             print(f"ERROR: Variable {comp_exp[1][1]} does not exist or is not defined")
