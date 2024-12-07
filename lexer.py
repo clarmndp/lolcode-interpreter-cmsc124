@@ -128,7 +128,7 @@ class Token:
 
 class Lexer:  
     # We convert source code by line into tokens
-    def definer(line):
+    def definer(self, line):
         tokens = []
         # Boolean keywords  
         BOOLEAN_VALUES = {
@@ -142,93 +142,109 @@ class Lexer:
         # print(token_elem)
         for temp_str in token_elem:
             if temp_str == "KTHXBYE":
-                
-                tokens.append(("end", temp_str.strip()))
+                tokens.append(Token("end", temp_str.strip()))
             
             elif re.search(visible, temp_str):
-                tokens.append(("expression", temp_str.strip()))
+                tokens.append(Token("expression", temp_str.strip()))
                 
             elif re.search(string_lit, temp_str):
+                tokens.append(Token(TOKEN_TYPES["STRING"], temp_str.strip()))
+                
+            elif re.search(addition, temp_str):
+                tokens.append(Token("arithmetic_operator", temp_str.strip()))
+                
+            elif re.search(subtraction, temp_str):
+                tokens.append(Token("arithmetic_operator", temp_str.strip()))
                
-                tokens.append((TOKEN_TYPES["STRING"],temp_str.strip()))
+            elif re.search(division, temp_str):
+                tokens.append(Token("arithmetic_operator", temp_str.strip()))
                 
-            elif re.search(addition,temp_str):
-                tokens.append(("arithmetic_operator",temp_str.strip()))
-                
-            elif re.search(subtraction,temp_str):
-                tokens.append(("arithmetic_operator",temp_str.strip()))
-               
-            elif re.search(division,temp_str):
-                tokens.append(("arithmetic_operator",temp_str.strip()))
-                
-            elif re.search(multiplication,temp_str):
-                tokens.append(("arithmetic_operator",temp_str.strip()))
-            elif re.search(r"MOD OF",temp_str):
-                tokens.append(("arithmetic_operator",temp_str))
+            elif re.search(multiplication, temp_str):
+                tokens.append(Token("arithmetic_operator", temp_str.strip()))
+            
+            elif re.search(r"MOD OF", temp_str):
+                tokens.append(Token("arithmetic_operator", temp_str))
+            
             elif re.search(r"BOTH SAEM", temp_str):
-                tokens.append(("comparison_operator",temp_str))
+                tokens.append(Token("comparison_operator", temp_str))
+            
             elif re.search(r"DIFFRINT", temp_str):
-                tokens.append(("comparison_operator",temp_str))
+                tokens.append(Token("comparison_operator", temp_str))
+            
             elif re.search(r"BOTH OF", temp_str):
-                tokens.append(("boolean_operator",temp_str))
+                tokens.append(Token("boolean_operator", temp_str))
+            
             elif re.search(r"EITHER OF", temp_str):
-                tokens.append(("boolean_operator",temp_str))
+                tokens.append(Token("boolean_operator", temp_str))
+            
             elif re.search(r"WON OF", temp_str):
-                tokens.append(("boolean_operator",temp_str))
+                tokens.append(Token("boolean_operator", temp_str))
+            
             elif re.search(r"NOT", temp_str):
-                tokens.append(("boolean_operator",temp_str))
-            elif re.search(r"ALL OF",temp_str):
-                tokens.append(("boolean_operator",temp_str))
-            elif re.search(r"ANY OF",temp_str):
-                tokens.append(("boolean_operator",temp_str))
+                tokens.append(Token("boolean_operator", temp_str))
+            
+            elif re.search(r"ALL OF", temp_str):
+                tokens.append(Token("boolean_operator", temp_str))
+            
+            elif re.search(r"ANY OF", temp_str):
+                tokens.append(Token("boolean_operator", temp_str))
+            
             elif re.search(r"MKAY", temp_str):
-                tokens.append(("inf_arity_delimeter",temp_str))
+                tokens.append(Token("inf_arity_delimeter", temp_str))
+            
             elif re.search(r"BIGGR OF", temp_str):
-                tokens.append(("arithmetic_operator",temp_str))
+                tokens.append(Token("arithmetic_operator", temp_str))
+            
             elif re.search(r"SMALLR OF", temp_str):
-                tokens.append(("arithmetic_operator",temp_str)) 
-            elif re.search(an,temp_str):
-                tokens.append(("delimeter", temp_str))
-            elif re.search(r"WAZZUP",temp_str):
-                tokens.append(("declaration_start", temp_str))
-            elif re.search(r"BUHBYE",temp_str):
-                tokens.append(("declaration_end", temp_str))
-            elif re.search(r"I HAS A",temp_str):
-                tokens.append(("declaration_keyword", temp_str))
-            elif re.search(r"ITZ",temp_str):
-                tokens.append(("declaration_delimiter", temp_str))
+                tokens.append(Token("arithmetic_operator", temp_str))
+            
+            elif re.search(an, temp_str):
+                tokens.append(Token("delimeter", temp_str))
+            
+            elif re.search(r"WAZZUP", temp_str):
+                tokens.append(Token("declaration_start", temp_str))
+            
+            elif re.search(r"BUHBYE", temp_str):
+                tokens.append(Token("declaration_end", temp_str))
+            
+            elif re.search(r"I HAS A", temp_str):
+                tokens.append(Token("declaration_keyword", temp_str))
+            
+            elif re.search(r"ITZ", temp_str):
+                tokens.append(Token("declaration_delimiter", temp_str))
+            
             elif re.search(r"WIN", temp_str):
-                tokens.append((TOKEN_TYPES["TROOF"],"WIN"))
+                tokens.append(Token(TOKEN_TYPES["TROOF"], "WIN"))
+            
             elif re.search(r"FAIL", temp_str):
-                tokens.append((TOKEN_TYPES["TROOF"],"FAIL"))
+                tokens.append(Token(TOKEN_TYPES["TROOF"], "FAIL"))
             
             elif re.search(r"SMOOSH", temp_str):
-                tokens.append(("concatenation", temp_str))
-            elif re.search(r"R",temp_str):
-                tokens.append(("reassignment_delimeter",temp_str))
+                tokens.append(Token("concatenation", temp_str))
+            
+            elif re.search(r"R", temp_str):
+                tokens.append(Token("reassignment_delimeter", temp_str))
+            
             elif re.search(r"MAEK A", temp_str):
-                tokens.append(("typecasting_delimeter",temp_str))
+                tokens.append(Token("typecasting_delimeter", temp_str))
+            
             elif re.search(r"IS NOW A", temp_str):
-                tokens.append(("typecasting_delimeter",temp_str))
+                tokens.append(Token("typecasting_delimeter", temp_str))
+            
             elif re.search(r"GIMMEH", temp_str):
-                tokens.append(("input", temp_str))
+                tokens.append(Token("input", temp_str))
+            
             elif re.search(r"\+", temp_str):
-                tokens.append(("visible_concat", temp_str))
-            elif re.search(varname,temp_str):
-                tokens.append(("variable", temp_str))
-            elif re.fullmatch(numbar,temp_str):
-                tokens.append((TOKEN_TYPES["NUMBAR"], float(temp_str)))
-            elif re.fullmatch(numbr,temp_str):
-                tokens.append((TOKEN_TYPES["NUMBR"], int(temp_str)))
-           
+                tokens.append(Token("visible_concat", temp_str))
             
-
-                
-    
+            elif re.search(varname, temp_str):
+                tokens.append(Token("variable", temp_str))
             
+            elif re.fullmatch(numbar, temp_str):
+                tokens.append(Token(TOKEN_TYPES["NUMBAR"], float(temp_str)))
+            
+            elif re.fullmatch(numbr, temp_str):
+                tokens.append(Token(TOKEN_TYPES["NUMBR"], int(temp_str)))
 
-        """ developer notes:
-            need to add handle cases for delimiters, bools, cond statements, etc.
-        """
         print(tokens)
         return tokens
