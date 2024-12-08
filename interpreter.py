@@ -8,6 +8,7 @@
 
     Components/ modules:
         lexer.py - Handles tokenization and lexical analysis
+        parser.py - Handles parsing of keyword/variable and semantic analysis
         interpreter.py - Ties all components together and handles program execution
 
     GUI Framework:
@@ -25,17 +26,14 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 
 # Python functions used
-import sys
 from io import StringIO
+
+import sys
+from lexer import Lexer
+import parser
 import re
 
-# Lexer class from lexer.py
-from lexer import Lexer  # import the Lexer class
-
-# symbol table
-symbol_table = {}
-
-
+lexeme_table=[]
 
 class MainWindow(App):
     def __init__(self, **kwargs):
@@ -45,9 +43,9 @@ class MainWindow(App):
 
         self.current_line_index = 0  # track the current line index
         self.lines = []  # store lines from the file
-        self.tokens_output = ""  # store the tokens for display
-        self.tokens_display = TextInput(readonly=True, multiline=True)  # add tokens display (lexeme table)
         self.lexer = Lexer()  # create the lexer instance here
+
+        self.tokens_display = TextInput(readonly=True, multiline=True)  # Initialize tokens_display here
 
     # function to create main interpreter UI
     def build(self):
@@ -72,13 +70,19 @@ class MainWindow(App):
         layout.add_widget(save_button)
 
         # Lexeme Table
-        self.tokens_display.size_hint = (0.3, 0.5)
+        self.tokens_display.size_hint = (0.25, 0.5)
         self.tokens_display.pos_hint = {'x': 0.6, 'top': 1}
         layout.add_widget(self.tokens_display)
 
+        # Symbol Table
+        self.symbol_table_display = TextInput(readonly=True, multiline=True)
+        self.symbol_table_display.size_hint = (0.25, 0.5)
+        self.symbol_table_display.pos_hint = {'x': 0.85, 'top': 1}
+        layout.add_widget(self.symbol_table_display)
+
         # Console
         console_section = BoxLayout(orientation='vertical', size_hint=(1, 0.5), pos_hint={'x': 0, 'y': 0})
-        self.console_output = TextInput(readonly=True, multiline=True)  # output area
+        self.console_output = TextInput(readonly=True, multiline=True, text="")  # Initialize with an empty string
         console_section.add_widget(self.console_output)  # add output area to Console
         
         # Run/Execute Button for Console
@@ -101,188 +105,68 @@ class MainWindow(App):
             with open(self.current_file, 'w') as file:  # Open in write mode
                 file.write(self.text_editor.text)  # Save the contents to the file
 
+    def update_console(self, message):
+        """Update the console output area with a new message."""
+        if self.console_output.text is None:  # Check if text is None
+            self.console_output.text = ""
+        self.console_output.text += f"{message}\n"  # Append the new message to the console output
+
+    def update_tokens_display(self, tokens):
+        """Update the tokens display widget with the current tokens."""
+        tokens_str = "\n".join([f"{token[0]}: {token[1]}" for token in tokens])  # Format tokens for display
+        self.tokens_display.text += tokens_str + "\n"  # Append the new tokens to the display
+
+    def update_symbol_table_display(self, parseinfo):
+        """Update the symbol table display widget."""
+        if parseinfo == None:
+            self.symbol_table_display.text += "ERROR: No tokens to parse"
+            self.symbol_table_display.text += f"{parseinfo}"
+            return
+        self.symbol_table_display.text += "Current Symbol Table:\n"
+        for key, value in parseinfo.items():
+            self.symbol_table_display.text += (f"{key}: {value}\n")
+
     # Main LOLCODE Interpreter
     def interpreter(self, filename):
-        # Check if the file extension is .lol
+        # We first check if the file extension is .lol
         if not filename.endswith('.lol'):
-            # Output: Error message
-            self.console_output.text += "Error: File must have '.lol' extension\n"
-            return
+            self.update_console("Error: File must have '.lol' extension")  # Update console instead of print
+            return  # Exit the function
         try:
             with open(filename, 'r') as file:
                 # Read the first line and check for HAI
                 starting = file.readline().strip()
-                
+            
                 if starting != "HAI":
-                    # Output: Error
-                    self.console_output.text += "Error: Invalid Starting Keyword\n"
-                    return
+                    self.update_console("Error: Invalid Starting Keyword")  # Update console instead of print
+                    return  # Exit the function
+                for line in file:
+                    line = line.strip()  # Removes the white spaces around the line
+                    if line:  # Skip empty lines
+                        tokenize = self.lexer.definer(line)  # Tokenize the line
+                        
+                        if tokenize!=None:
+                            if tokenize!=[]:
+                                lexeme_table.append(tokenize)
 
-                self.lines = file.readlines()  # Read all lines into a list
-                self.current_line_index = 0  # Reset line index
+                        # Update the tokens display with the current line's tokens
+                        self.update_tokens_display(tokenize)
 
-                # create an instance of the Lexer
-                lexer = Lexer()
-
-                # Tokenize each line and store the tokens
-                self.tokens = []
-                for line in self.lines:
-                    tokens = lexer.definer(line.strip())  # Tokenize the line
-                    self.tokens_output += "\n".join([f"{token.type}: {token.value}" for token in tokens if token.type != "single_line_comment"]) + "\n"  # Collect tokens, Skipping comments
-                    self.tokens_display.text = self.tokens_output  # Update the Lexeme Table
-
-                # Start executing lines
-                self.execute_next_line()
+                for index in range(len(lexeme_table)):
+                    parse = parser.Parser(lexeme_table[index],lexeme_table,index, main_window = self)
+                    parse_tree = parse.parse()
+                    
+                self.update_symbol_table_display(parser.symbol_table)
 
         except FileNotFoundError:
-            self.console_output.text += f"Error: Could not find file '{filename}'\n"
+            self.update_console(f"Error: Could not find file '{filename}'")  # Update console instead of print
 
-    def execute_next_line(self):
-        # Go through each line
-        while self.current_line_index < len(self.lines):
-            line = self.lines[self.current_line_index].strip()  # Removes the white spaces around the line
-            if line:
-                tokens = self.lexer.definer(line)  # Use the lexer instance
-                if any(token.type == "arithmetic_operator" for token in tokens):
-                    self.handle_arithmetic(tokens)  # Handle arithmetic operations
-            
-            # Evaluate keywords/ identifiers
-            if line:
-                
-                # VISIBLE
-                if line.startswith("VISIBLE"):
-                    tokenized = line.split("VISIBLE ")
-                    tokenized[0] = "VISIBLE"
-                    if tokenized[1].startswith("\""):  # String literal printing
-                        tokenized[1] = tokenized[1].strip("\"")
-                        self.console_output.text += tokenized[1] + "\n"
-                    else:
-                        # Handle case for arithmetic expressions
-                        if "SUM OF" in tokenized[1] or "DIFF OF" in tokenized[1] or "PRODUKT OF" in tokenized[1] or "QUOSHUNT OF" in tokenized[1] or "MOD OF" in tokenized[1]:
-                            result = self.handle_arithmetic(self.lexer.definer(tokenized[1]))
-                            self.console_output.text += str(result) + "\n"
-                        # Valid variable
-                        elif tokenized[1] in symbol_table.keys():
-                            self.console_output.text += str(symbol_table[tokenized[1]]) + "\n"
-                        else:
-                            # Output: Error
-                            self.console_output.text += f"Variable {tokenized[1]} does not exist in the dictionary\n"
-                
-                # I HAS A
-                elif line.startswith("I HAS A"):
-                    tokenized = line.split("I HAS A ")[1].strip()  # Get the variable declaration elementw
-                    var_name, var_value = tokenized.split(" ITZ ") if " ITZ " in tokenized else (tokenized, None)
-                    if re.match(r"^[A-Za-z]", var_name):  # Valid variable name
-                        symbol_table[var_name] = var_value if var_value else None  # Assign value
-                
-                # ITZ
-                elif line.startswith("ITZ"):
-                    tokenized = line.split("ITZ ")
-                    if len(tokenized) == 2:
-                        var_name = tokenized[0].strip()
-                        value = tokenized[1].strip()
-                        # Handle assignment for WIN and FAIL
-                        if value == "WIN":
-                            symbol_table[var_name] = "WIN"
-                        elif value == "FAIL":
-                            symbol_table[var_name] = "FAIL"
-                
-                # GIMMEH
-                elif line.startswith("GIMMEH"):
-                    tokenized = line.split("GIMMEH ")
-                    tokenized[0] = "GIMMEH"
-                    if tokenized[1] not in symbol_table.keys():
-                        self.console_output.text += f"Variable {tokenized[1]} is not known\n"
-                        return
-                    else:
-                        self.prompt_for_input(tokenized[1])  # Prompt for input (popup)
-                        return  # break out of the loop to wait for input
-                                # this stops the interpreter from executing further lines
-                
-                # Boolean operators
-                elif "BOTH OF" in line:
-                    # Handle BOTH OF logic
-                    operands = line.split("BOTH OF")
-                    if len(operands) == 2:
-                        left = operands[0].strip()
-                        right = operands[1].strip()
-                        result = (self.evaluate_expression(left) and self.evaluate_expression(right))
-                elif "EITHER OF" in line:
-                    # Handle EITHER OF logic
-                    operands = line.split("EITHER OF")
-                    if len(operands) == 2:
-                        left = operands[0].strip()
-                        right = operands[1].strip()
-                        result = (self.evaluate_expression(left) or self.evaluate_expression(right))
-                elif "WON OF" in line:
-                    # Handle WON OF logic
-                    operands = line.split("WON OF")
-                    if len(operands) == 2:
-                        left = operands[0].strip()
-                        right = operands[1].strip()
-                        result = (self.evaluate_expression(left) ^ self.evaluate_expression(right))
-                elif "NOT" in line:
-                    # Handle NOT logic
-                    operand = line.split("NOT")[1].strip()
-                    result = not self.evaluate_expression(operand)
-
-            self.current_line_index += 1  # move to the next line
-
-    # Arithmetic operation logic
-    def handle_arithmetic(self, tokens):
-        # Check if the tokens represent an arithmetic operation
-        if len(tokens) == 4 and tokens[2].value == "AN":  # Ensure the format is OPERATOR OPERAND1 AN OPERAND2
-            operator = tokens[0].value
-            operand1 = self.evaluate_operand(tokens[1].value)  # Evaluate the first operand
-            operand2 = self.evaluate_operand(tokens[3].value)  # Evaluate the second operand
-            
-            # Convert operands to int or float
-            operand1 = int(operand1)
-            operand2 = int(operand2)
-
-            if operator == "SUM OF":
-                result = operand1 + operand2
-            elif operator == "DIFF OF":
-                result = operand1 - operand2
-            elif operator == "PRODUKT OF":
-                result = operand1 * operand2
-            elif operator == "QUOSHUNT OF":
-                result = operand1 / operand2 if operand2 != 0 else "Error: Division by zero"
-            elif operator == "MOD OF":
-                result = operand1 % operand2 if operand2 != 0 else "Error: Division by zero"
-            else:
-                result = "Error: Unknown operator"
-
-            return result
-
-    # Function to check if operand is a variable or num
-    def evaluate_operand(self, operand):
-        if operand in symbol_table:
-            value = symbol_table[operand] if symbol_table[operand] is not None else 0  # Return 0 if variable is None
-            return value
-
-    # Boolean evaluation
-    def evaluate_expression(self, expression):
-        # Evaluate the expression and return a boolean value
-        if expression in symbol_table:
-            return symbol_table[expression] == "WIN"
-        return expression == "WIN"
-
-    # Function to call interpreter function when user runs code
     def run_lolcode(self, instance):
-        if self.current_file:  # check if a file is selected
-            self.output_buffer = StringIO()
-            sys.stdout = self.output_buffer
-            
-            try:
-                # call the interpreter function
-                self.interpreter(self.current_file)
-            except Exception as e:
-                self.console_output.text += f"Error during execution: {str(e)}\n"
-        else:
-            self.console_output.text += "Error: No file selected.\n"
+        """Method to execute the LOLCODE script."""
+        if self.current_file:
+            # Call the interpreter with the current file
+            self.interpreter(self.current_file)
 
-    # User input popup
     def prompt_for_input(self, variable_name):
         input_box = TextInput(hint_text=f"Enter value for {variable_name}", multiline=False)
         submit_button = Button(text="Submit", size_hint_y=None, height=50)
@@ -290,11 +174,10 @@ class MainWindow(App):
 
         def on_submit(instance):
             value = input_box.text.strip()  # Get input from user
+            self.console_output.text += f"value is {value}\n"
             if value:  # Check if the input is not empty
-                symbol_table[variable_name] = value
+                parser.symbol_table["IT"] = str(value)
                 popup.dismiss()
-                self.current_line_index += 1  # Move to the next line after input
-                self.execute_next_line()  # Call function to execute the next line
             else:
                 self.console_output.text += "Error: Input cannot be empty.\n"
 
