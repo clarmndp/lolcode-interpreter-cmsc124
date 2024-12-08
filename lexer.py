@@ -12,6 +12,7 @@ an= r"AN"
 equal= r"R"
 visible= r"VISIBLE"
 varname =r"[A-Za-z][A-Za-z\d]*"
+multiline_comment_flag=0
 TOKEN_TYPES = {
     "KEYWORD": "KEYWORD",
     "STRING": "STRING",
@@ -109,13 +110,17 @@ KEYWORDS = {
     # Infinite arity
     "MKAY": "infinite_arity_end"
 }
-keyword= ["SUM OF", "VISIBLE", "DIFF OF","PRODUKT OF", "QUOSHUNT OF",
-          "BOTH SAEM", "DIFFRINT", "BIGGR OF", "SMALLR OF",
+keyword= ["SUM OF", "VISIBLE","+", "DIFF OF","PRODUKT OF", "QUOSHUNT OF",
+          "BOTH SAEM", "DIFFRINT", "BIGGR OF", "SMALLR OF","MOD OF",
           "BOTH OF", "EITHER OF", "WON OF", "NOT","WIN","FAIL", "ALL OF","MKAY","ANY OF",
-          "I HAS A", "ITZ","WAZZUP","BUHBYE"
+          "I HAS A", "ITZ","WAZZUP","BUHBYE",
           "SMOOSH",
-          "R",
-          "GIMMEH"
+          "R","MAEK A","IS NOW A",
+          "GIMMEH",
+          "O RLY?", "YA RLY", "NO WAI","OIC",
+          "WTF?","OMGWTF", "OMG","GTFO",
+          "IM IN YR","UPPIN","NERFIN", "TIL","WILE",
+          "OBTW","BTW", "TLDR", 
           ]
 
 class Token:
@@ -140,6 +145,7 @@ class Lexer:
         token_elem =  r'|'.join([re.escape(keyword_elem) for keyword_elem in keyword]) +r'|'+r'"[^"]*"|\S+'+r'|' +r"-?\d+"+r'|'+r'\S+'
         token_elem=re.findall(token_elem,line)
         # print(token_elem)
+        global multiline_comment_flag
         for temp_str in token_elem:
             if temp_str == "KTHXBYE":
                 
@@ -150,7 +156,7 @@ class Lexer:
                 
             elif re.search(string_lit, temp_str):
                
-                tokens.append((TOKEN_TYPES["STRING"],temp_str.strip()))
+                tokens.append((TOKEN_TYPES["STRING"],temp_str.strip('"')))
                 
             elif re.search(addition,temp_str):
                 tokens.append(("arithmetic_operator",temp_str.strip()))
@@ -163,7 +169,18 @@ class Lexer:
                 
             elif re.search(multiplication,temp_str):
                 tokens.append(("arithmetic_operator",temp_str.strip()))
-                
+            elif re.search(r"OBTW",temp_str):
+                multiline_comment_flag=1
+                print("TESTING")
+            elif re.search(r"BTW",temp_str):
+                return tokens
+            elif re.search(r"TLDR",temp_str):
+                multiline_comment_flag=0
+                if len(tokens)>0:
+                    print("ERROR: MULTILINE COMMENT DELIMETER SHOULD NOT BE IN THESAME LINE AS AN ACTUAL CODE")
+                    exit()
+            elif re.search(r"MOD OF",temp_str):
+                tokens.append(("arithmetic_operator",temp_str))
             elif re.search(r"BOTH SAEM", temp_str):
                 tokens.append(("comparison_operator",temp_str))
             elif re.search(r"DIFFRINT", temp_str):
@@ -182,10 +199,10 @@ class Lexer:
                 tokens.append(("boolean_operator",temp_str))
             elif re.search(r"MKAY", temp_str):
                 tokens.append(("inf_arity_delimeter",temp_str))
-            elif re.search(r"BIGGR", temp_str):
-                tokens.append(("relational_operation",temp_str))
-            elif re.search(r"SMALLR", temp_str):
-                tokens.append(("relational_operation",temp_str)) 
+            elif re.search(r"BIGGR OF", temp_str):
+                tokens.append(("arithmetic_operator",temp_str))
+            elif re.search(r"SMALLR OF", temp_str):
+                tokens.append(("arithmetic_operator",temp_str)) 
             elif re.search(an,temp_str):
                 tokens.append(("delimeter", temp_str))
             elif re.search(r"WAZZUP",temp_str):
@@ -203,11 +220,33 @@ class Lexer:
             
             elif re.search(r"SMOOSH", temp_str):
                 tokens.append(("concatenation", temp_str))
-            elif re.search(r"R",temp_str):
-                tokens.append(("reassignment_delimeter",temp_str))
+           
+            elif re.search(r"MAEK A", temp_str):
+                tokens.append(("typecasting_delimeter",temp_str))
+            elif re.search(r"IS NOW A", temp_str):
+                tokens.append(("typecasting_delimeter",temp_str))
+            elif re.search(r"O RLY\?",temp_str):
+                tokens.append(("conidtional_start_delimeter",temp_str))
+            elif re.search(r"YA RLY",temp_str):
+                tokens.append(("conidtional_true",temp_str))
+            elif re.search(r"NO WAI",temp_str):
+                tokens.append(("conidtional_false",temp_str))
+            elif re.search(r"OMGWTF",temp_str):
+                tokens.append(("switch_else",temp_str))
+            elif re.search(r"WTF\?",temp_str):
+                tokens.append(("switch_start_delimeter",temp_str))
+            elif re.search(r"OMG",temp_str):
+                tokens.append(("switch_case",temp_str))
+            elif re.search(r"GTFO",temp_str):
+                tokens.append(("switch_break",temp_str))
+            elif re.search(r"OIC",temp_str):
+                tokens.append(("conidtional_end_delimeter",temp_str))
             elif re.search(r"GIMMEH", temp_str):
                 tokens.append(("input", temp_str))
-
+            elif re.search(r"R",temp_str):
+                tokens.append(("reassignment_delimeter",temp_str))
+            elif re.search(r"\+", temp_str):
+                tokens.append(("visible_concat", temp_str))
             elif re.search(varname,temp_str):
                 tokens.append(("variable", temp_str))
             elif re.fullmatch(numbar,temp_str):
@@ -224,5 +263,8 @@ class Lexer:
         """ developer notes:
             need to add handle cases for delimiters, bools, cond statements, etc.
         """
-        print(tokens)
-        return tokens
+        # print(tokens)
+        if multiline_comment_flag!=0:
+            return None
+        else:
+            return tokens

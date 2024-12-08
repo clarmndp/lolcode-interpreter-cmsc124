@@ -28,37 +28,35 @@ def interpreter(filename):
     try:
         with open(filename, 'r') as file:
             # Read the first line and check for HAI
-            starting = file.readline().strip()
-            
-            if starting != "HAI":
-                print ("Error: Invalid Starting Keyword")
-                exit()
 
             # Proceed to the rest of the LOLCODE file
+            
             for line in file:
-                
-
                 line = line.strip() # Removes the white spaces around the line
                 if line:  # Skip empty lines
                     line=line.strip() # Rmoves the white spaces around the line
                     tokenize= Lexer.definer(line)
-                   
-                    parse= parser.Parser(tokenize)
-                    parse_tree = parse.parse()   
-                    print(f"SYMBOL TABLE {parser.symbol_table}")   
+                    
+                    if tokenize!=None:
+                        if tokenize!=[]:
+                            lexeme_table.append(tokenize)
+            
+            if lexeme_table[-1][0][1]!="KTHXBYE" or lexeme_table[0][0][1] !="HAI":
+                print("ERROR: SHOULD START WITH HAI OR END WITH KTHXBYE")
+                exit()
+            
+            for index in range(len(lexeme_table)):
+                
+                
+                parse= parser.Parser(lexeme_table[index],lexeme_table,index)
+                parse_tree = parse.parse()
+                
+               
+                    
+                
     except FileNotFoundError:
         print(f"Error: Could not find file '{filename}'")
 
-def analyzeTokens(tokens):
-    """ Process the tokens from each line
-        Check token types here 
-    """
-    print(lexeme_table)
-    # for i in lexeme_table:
-    #     for token in i:
-    #         print(f"Token: {token.type} = {token.value}")
-
-# Start
 def main():
     if len(sys.argv) != 2:
         print("Error: Must be of format > python main.py <filename.lol>")
